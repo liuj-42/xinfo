@@ -9,7 +9,7 @@ function App() {
   const layer = new GeoJsonLayer({
     id: 'GeoJsonLayer',
     data: geojsonData,
-    stroked: false,
+    stroked: true,
     filled: true,
     pickable: true,
     getFillColor: (f) => {
@@ -18,8 +18,17 @@ function App() {
       return [hash & 0xFF, (hash & 0xFF00) >> 8, (hash & 0xFF0000) >> 16];
     },
     getLineColor: [255, 255, 255],
-    lineWidthMinPixels: 1,
+    lineWidthMinPixels: 2,
     onHover: (info) => setHoverInfo(info),
+  });
+
+  const hoverLayer = hoverInfo?.object && new GeoJsonLayer({
+    id: 'HoverLayer',
+    data: hoverInfo.object,
+    stroked: true,
+    filled: false,
+    getLineColor: [255, 0, 0],
+    lineWidthMinPixels: 8,
   });
 
   const INITIAL_VIEW_STATE = {
@@ -35,7 +44,7 @@ function App() {
       <DeckGL
         initialViewState={INITIAL_VIEW_STATE}
         controller={true}
-        layers={[layer]}
+        layers={[layer, hoverLayer].filter(Boolean)}
       />
       {hoverInfo && hoverInfo.object && (
         <div style={{position: 'absolute', zIndex: 1, pointerEvents: 'none', left: hoverInfo.x, top: hoverInfo.y}}>
