@@ -10,12 +10,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@visx/visx": "^3.10.2",
-    "leaflet": "^1.9.4",
+    "deck.gl": "^9.0.8",
+    "geojson": "^0.5.0",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-leaflet": "^4.2.1",
-    "topojson-client": "^3.1.0"
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.66",
