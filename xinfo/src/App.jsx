@@ -2,9 +2,13 @@ import { useState } from 'react';
 import DeckGL from '@deck.gl/react';
 import { GeoJsonLayer } from '@deck.gl/layers';
 import geojsonData from './assets/new-york-counties.json';
+import FormGroup from '@mui/material/FormGroup';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Checkbox from '@mui/material/Checkbox';
 
 function App() {
   const [hoverInfo, setHoverInfo] = useState(null);
+  const [checkedItems, setCheckedItems] = useState(["NDVI"]);
 
   const layer = new GeoJsonLayer({
     id: 'GeoJsonLayer',
@@ -39,6 +43,14 @@ function App() {
     bearing: 0
   };
 
+  const handleChecked = (value) => {
+    if (checkedItems.includes(value)) {
+      setCheckedItems(checkedItems.filter(item => item !== value));
+    } else {
+      setCheckedItems([...checkedItems, value]);
+    }
+  };
+  
   return (
     <div>
       <DeckGL
@@ -53,6 +65,11 @@ function App() {
           </div>
         </div>
       )}
+      <FormGroup>
+        <FormControlLabel control={<Checkbox defaultChecked onChange={() => handleChecked("NDVI")}/>} label="NDVI" />
+        <FormControlLabel control={<Checkbox onChange={() => handleChecked("Percipitation")}/>} label="Percipitation" />
+        <FormControlLabel control={<Checkbox onChange={() => handleChecked("Temperature")}/>} label="Temperature" />
+      </FormGroup>
     </div>
   );
 }
