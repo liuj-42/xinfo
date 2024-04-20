@@ -8,12 +8,18 @@ import Checkbox from '@mui/material/Checkbox';
 
 function App() {
   const [hoverInfo, setHoverInfo] = useState(null);
-  const [checkedItems, setCheckedItems] = useState(["NDVI"]);
+  const [layerVisibility, setLayerVisibility] = useState({
+    ndvi: true,
+    precipitation: false,
+    temperature: false
+  });
 
+  // TODO: we can add a visibility prop to each layger and assign it to the corresponding state
   const layer = new GeoJsonLayer({
     id: 'GeoJsonLayer',
     data: geojsonData,
     stroked: true,
+    visible: layerVisibility.ndvi,
     filled: true,
     pickable: true,
     getFillColor: (f) => {
@@ -43,12 +49,11 @@ function App() {
     bearing: 0
   };
 
-  const handleChecked = (value) => {
-    if (checkedItems.includes(value)) {
-      setCheckedItems(checkedItems.filter(item => item !== value));
-    } else {
-      setCheckedItems([...checkedItems, value]);
-    }
+  const handleChecked = (layer) => {
+    setLayerVisibility({
+      ...layerVisibility,
+      [layer]: !layerVisibility[layer],
+    });
   };
   
   return (
@@ -66,9 +71,9 @@ function App() {
         </div>
       )}
       <FormGroup>
-        <FormControlLabel control={<Checkbox defaultChecked onChange={() => handleChecked("NDVI")}/>} label="NDVI" />
-        <FormControlLabel control={<Checkbox onChange={() => handleChecked("Percipitation")}/>} label="Percipitation" />
-        <FormControlLabel control={<Checkbox onChange={() => handleChecked("Temperature")}/>} label="Temperature" />
+        <FormControlLabel control={<Checkbox defaultChecked onChange={() => handleChecked("ndvi")}/>} label="NDVI" />
+        <FormControlLabel control={<Checkbox onChange={() => handleChecked("percipitation")}/>} label="Percipitation" />
+        <FormControlLabel control={<Checkbox onChange={() => handleChecked("temperature")}/>} label="Temperature" />
       </FormGroup>
     </div>
   );
