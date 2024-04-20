@@ -14,23 +14,41 @@ function App() {
     temperature: false
   });
 
-  // TODO: we can add a visibility prop to each layger and assign it to the corresponding state
-  const layer = new GeoJsonLayer({
-    id: 'GeoJsonLayer',
-    data: geojsonData,
-    stroked: true,
-    visible: layerVisibility.ndvi,
-    filled: true,
-    pickable: true,
-    getFillColor: (f) => {
-      // Use the feature's properties to generate a color
-      const hash = [...f.properties.name].reduce((acc, char) => char.charCodeAt(0) + ((acc << 5) - acc), 0);
-      return [hash & 0xFF, (hash & 0xFF00) >> 8, (hash & 0xFF0000) >> 16];
-    },
-    getLineColor: [255, 255, 255],
-    lineWidthMinPixels: 2,
-    onHover: (info) => setHoverInfo(info),
-  });
+  // TODO: we can add a visibility prop to each layger and assign it to the corresponding state -> layerVisibility
+  const layer = [
+    new GeoJsonLayer({
+      id: 'GeoJsonLayer',
+      data: geojsonData,
+      stroked: true,
+      visible: true,
+      filled: true,
+      pickable: true,
+      // getFillColor: (f) => {
+      //   // Use the feature's properties to generate a color
+      //   const hash = [...f.properties.name].reduce((acc, char) => char.charCodeAt(0) + ((acc << 5) - acc), 0);
+      //   return [hash & 0xFF, (hash & 0xFF00) >> 8, (hash & 0xFF0000) >> 16];
+      // },
+      getLineColor: [255, 255, 255],
+      lineWidthMinPixels: 2,
+      onHover: (info) => setHoverInfo(info),
+    }),
+    new GeoJsonLayer({
+      id: 'GeoJsonLayer',
+      data: geojsonData,
+      stroked: true,
+      visible: layerVisibility.ndvi,
+      filled: true,
+      pickable: true,
+      getFillColor: (f) => {
+        // Use the feature's properties to generate a color
+        const hash = [...f.properties.name].reduce((acc, char) => char.charCodeAt(0) + ((acc << 5) - acc), 0);
+        return [hash & 0xFF, (hash & 0xFF00) >> 8, (hash & 0xFF0000) >> 16];
+      },
+      getLineColor: [255, 255, 255],
+      lineWidthMinPixels: 2,
+      onHover: (info) => setHoverInfo(info),
+    }),
+  ];
 
   const hoverLayer = hoverInfo?.object && new GeoJsonLayer({
     id: 'HoverLayer',
@@ -49,6 +67,7 @@ function App() {
     bearing: 0
   };
 
+  // control layer visibility
   const handleChecked = (layer) => {
     setLayerVisibility({
       ...layerVisibility,
