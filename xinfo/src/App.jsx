@@ -3,7 +3,7 @@ import DeckGL from '@deck.gl/react';
 import { GeoJsonLayer } from '@deck.gl/layers';
 import { HeatmapLayer } from '@deck.gl/aggregation-layers';
 import geojsonData from './assets/new-york-counties.json';
-import ndviData from './assets/new_ndvi.json';
+import ndviData from './assets/ndvi_monthly/ndvi_202301.json';
 import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
@@ -52,11 +52,11 @@ function App() {
     }),
     new HeatmapLayer({
       id: 'ndviLayer',
-      data: ndviData,
+      data: ndviData['20230101'],
       visible: layerVisibility.ndvi,
       aggregation: 'SUM',
       getPosition: (d) => [d.longitude, d.latitude],
-      getWeight: (d) => d.NDVI,
+      getWeight: (d) => d.ndvi,
       radiusPixels: 30,
       colorRange: [[0, 172, 105], [244, 161, 0], [247, 100, 0], [232, 21, 0], [227, 0, 89], [105, 0, 99]],
       opacity: 0.7,
@@ -73,10 +73,10 @@ function App() {
   });
 
   const INITIAL_VIEW_STATE = {
-    longitude: -74.5,
-    latitude: 40.7,
-    zoom: 9,
-    pitch: 0,
+    longitude: -75.5,
+    latitude: 42.5,
+    zoom: 6.4,
+    pitch: 40,
     bearing: 0
   };
 
