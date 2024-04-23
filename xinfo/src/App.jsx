@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import DeckGL from '@deck.gl/react';
 import { GeoJsonLayer } from '@deck.gl/layers';
+import { HeatmapLayer } from '@deck.gl/aggregation-layers';
 import geojsonData from './assets/new-york-counties.json';
+import ndviData from './assets/new_ndvi.json';
 import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
@@ -48,6 +50,15 @@ function App() {
       lineWidthMinPixels: 2,
       onHover: (info) => setHoverInfo(info),
     }),
+    new HeatmapLayer({
+      id: 'HeatmapLayer',
+      data: ndviData,
+      visible: true,
+      aggregation: 'SUM',
+      getPosition: (d) => [d.longitude, d.latitude],
+      getWeight: (d) => d.NDVI,
+      radiusPixels: 30
+    })
   ];
 
   const hoverLayer = hoverInfo?.object && new GeoJsonLayer({
