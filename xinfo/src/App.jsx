@@ -38,7 +38,7 @@ function App() {
       id: 'GeoJsonLayer',
       data: geojsonData,
       stroked: true,
-      visible: layerVisibility.ndvi,
+      visible: false,
       filled: true,
       pickable: true,
       getFillColor: (f) => {
@@ -53,7 +53,7 @@ function App() {
     new HeatmapLayer({
       id: 'HeatmapLayer',
       data: ndviData,
-      visible: true,
+      visible: layerVisibility.ndvi,
       aggregation: 'SUM',
       getPosition: (d) => [d.longitude, d.latitude],
       getWeight: (d) => d.NDVI,
