@@ -13,7 +13,7 @@ function App() {
   const [layerVisibility, setLayerVisibility] = useState({
     ndvi: true,
     precipitation: false,
-    temperature: false
+    counties: false,
   });
 
   // TODO: we can add a visibility prop to each layger and assign it to the corresponding state -> layerVisibility
@@ -35,10 +35,10 @@ function App() {
       onHover: (info) => setHoverInfo(info),
     }),
     new GeoJsonLayer({
-      id: 'GeoJsonLayer',
+      id: 'countiesLayer',
       data: geojsonData,
       stroked: true,
-      visible: false,
+      visible: layerVisibility.counties,
       filled: true,
       pickable: true,
       getFillColor: (f) => {
@@ -51,7 +51,7 @@ function App() {
       onHover: (info) => setHoverInfo(info),
     }),
     new HeatmapLayer({
-      id: 'HeatmapLayer',
+      id: 'ndviLayer',
       data: ndviData,
       visible: layerVisibility.ndvi,
       aggregation: 'SUM',
@@ -59,6 +59,7 @@ function App() {
       getWeight: (d) => d.NDVI,
       radiusPixels: 30,
       colorRange: [[0, 172, 105], [244, 161, 0], [247, 100, 0], [232, 21, 0], [227, 0, 89], [105, 0, 99]],
+      opacity: 0.7,
     })
   ];
 
@@ -67,7 +68,7 @@ function App() {
     data: hoverInfo.object,
     stroked: true,
     filled: false,
-    getLineColor: [255, 0, 0],
+    getLineColor: [255, 249, 82],
     lineWidthMinPixels: 8,
   });
 
@@ -89,6 +90,14 @@ function App() {
   
   return (
     <div>
+      <div className='checkboxes'>
+        <FormGroup>
+          <FormControlLabel control={<Checkbox defaultChecked onChange={() => handleChecked("ndvi")}/>} label="NDVI" />
+          <FormControlLabel control={<Checkbox onChange={() => handleChecked("percipitation")}/>} label="Percipitation" />
+          <FormControlLabel control={<Checkbox onChange={() => handleChecked("counties")}/>} label="Counties" />
+        </FormGroup>
+      </div>
+
       <DeckGL
         initialViewState={INITIAL_VIEW_STATE}
         controller={true}
@@ -101,11 +110,7 @@ function App() {
           </div>
         </div>
       )}
-      <FormGroup>
-        <FormControlLabel control={<Checkbox defaultChecked onChange={() => handleChecked("ndvi")}/>} label="NDVI" />
-        <FormControlLabel control={<Checkbox onChange={() => handleChecked("percipitation")}/>} label="Percipitation" />
-        <FormControlLabel control={<Checkbox onChange={() => handleChecked("temperature")}/>} label="Temperature" />
-      </FormGroup>
+      
     </div>
   );
 }
