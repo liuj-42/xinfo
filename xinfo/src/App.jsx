@@ -2,21 +2,41 @@ import { useState } from "react";
 import DeckGL from "@deck.gl/react";
 import { GeoJsonLayer } from "@deck.gl/layers";
 import geojsonData from "./assets/new-york-counties.json";
-import precipData from "./assets/precip-2023.json";
 import { HexagonLayer } from "deck.gl";
 import FormGroup from "@mui/material/FormGroup";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Checkbox from "@mui/material/Checkbox";
 
-const bounds = {
-  "-79": [42.0, 43.0],
-  "-78": [42.0, 43.0],
-  "-77": [42.0, 43.0],
-  "-76": [42.0, 43.0, 44.0],
-  "-75": [42.0, 43.0, 44.0, 45.0],
-  "-74": [41.0, 42.0, 43.0, 44.0, 45.0],
-  "-73": [41.0],
+import precip01 from "./assets/precip/merged-01.json";
+import precip02 from "./assets/precip/merged-02.json";
+import precip03 from "./assets/precip/merged-03.json";
+import precip04 from "./assets/precip/merged-04.json";
+import precip05 from "./assets/precip/merged-05.json";
+import precip06 from "./assets/precip/merged-06.json";
+import precip07 from "./assets/precip/merged-07.json";
+import precip08 from "./assets/precip/merged-08.json";
+import precip09 from "./assets/precip/merged-09.json";
+import precip10 from "./assets/precip/merged-10.json";
+import precip11 from "./assets/precip/merged-11.json";
+import precip12 from "./assets/precip/merged-12.json";
+
+const monthlyPrecip = {
+  1: precip01,
+  2: precip02,
+  3: precip03,
+  4: precip04,
+  5: precip05,
+  6: precip06,
+  7: precip07,
+  8: precip08,
+  9: precip09,
+  10: precip10,
+  11: precip11,
+  12: precip12,
 };
+
+
+
 const getDateFromDayNum = function (dayNum) {
   let date = new Date();
   date.setFullYear(2023);
@@ -29,6 +49,21 @@ const getDateFromDayNum = function (dayNum) {
   date.setTime(timeOfFirst + dayNumMilli);
   return date;
 };
+
+const getDayNumFromDate = function (dayNum) {
+  if ( dayNum > 365) {
+    return -1;
+  }
+  return getDateFromDayNum(dayNum).getDay();
+}
+
+const getMonthNumFromDate = function (dayNum) {
+  return getDateFromDayNum(dayNum).getMonth() + 1;
+}
+
+
+
+
 function App() {
   const [hoverInfo, setHoverInfo] = useState(null);
 
@@ -78,11 +113,7 @@ function App() {
       onHover: (info) => setHoverInfo(info),
     }),
     new HexagonLayer({
-      data: precipData[selectedDay].filter((el) =>
-        bounds[el.COORDINATES[0]]
-          ? bounds[el.COORDINATES[0]].includes(el.COORDINATES[1])
-          : false
-      ),
+      data: monthlyPrecip[getMonthNumFromDate(selectedDay + 1)][getDayNumFromDate(selectedDay+1)],
       visible: layerVisibility.precipitation,
       getPosition: (d) => d.COORDINATES,
       getElevationWeight: (d) => d.precip,
@@ -124,17 +155,15 @@ function App() {
 
   // control layer visibility
   const handleChecked = (layer) => {
-    console.log(layer)
     setLayerVisibility({
       ...layerVisibility,
       [layer]: !layerVisibility[layer],
     });
-    console.log(layerVisibility)
   };
 
   return (
     <div>
-      <div style={{ position: "absolute", zIndex: 2 }}>
+      <div style={{ position: "relative", zIndex: 2 }}>
         <button onClick={() => setSelectedDay(selectedDay - 1)}>
           Previous Day
         </button>
@@ -142,8 +171,7 @@ function App() {
           Next Day
         </button>
         <span>
-          Date:
-          {getDateFromDayNum(selectedDay + 1).toDateString()}
+          Date: {getDateFromDayNum(selectedDay + 1).toDateString()}
         </span>
       </div>
       <DeckGL
