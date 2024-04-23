@@ -57,7 +57,8 @@ function App() {
       aggregation: 'SUM',
       getPosition: (d) => [d.longitude, d.latitude],
       getWeight: (d) => d.NDVI,
-      radiusPixels: 30
+      radiusPixels: 30,
+      colorRange: [[0, 172, 105], [244, 161, 0], [247, 100, 0], [232, 21, 0], [227, 0, 89], [105, 0, 99]],
     })
   ];
 
