@@ -26,59 +26,8 @@ import { ThemeProvider, createTheme } from "@mui/material/styles";
 import "./App.css";
 
 import precip01 from "./assets/merged-01.json";
-// import precip02 from "./assets/new_precip/merged-02.json";
-// import precip03 from "./assets/new_precip/merged-03.json";
-// import precip04 from "./assets/new_precip/merged-04.json";
-// import precip05 from "./assets/new_precip/merged-05.json";
-// import precip06 from "./assets/new_precip/merged-06.json";
-// import precip07 from "./assets/new_precip/merged-07.json";
-// import precip08 from "./assets/new_precip/merged-08.json";
-// import precip09 from "./assets/new_precip/merged-09.json";
-// import precip10 from "./assets/new_precip/merged-10.json";
-// import precip11 from "./assets/new_precip/merged-11.json";
-// import precip12 from "./assets/new_precip/merged-12.json";
 
 import ndvi01 from "./assets/ndvi_202301.json";
-// import ndvi02 from "./assets/ndvi_monthly/ndvi_202302.json";
-// import ndvi03 from "./assets/ndvi_monthly/ndvi_202303.json";
-// import ndvi04 from "./assets/ndvi_monthly/ndvi_202304.json";
-// import ndvi05 from "./assets/ndvi_monthly/ndvi_202305.json";
-// import ndvi06 from "./assets/ndvi_monthly/ndvi_202306.json";
-// import ndvi07 from "./assets/ndvi_monthly/ndvi_202307.json";
-// import ndvi08 from "./assets/ndvi_monthly/ndvi_202308.json";
-// import ndvi09 from "./assets/ndvi_monthly/ndvi_202309.json";
-// import ndvi10 from "./assets/ndvi_monthly/ndvi_202310.json";
-// import ndvi11 from "./assets/ndvi_monthly/ndvi_202311.json";
-// import ndvi12 from "./assets/ndvi_monthly/ndvi_202312.json";
-
-// const monthlyPrecip = {
-//   1: precip01,
-//   2: precip02,
-//   3: precip03,
-//   4: precip04,
-//   5: precip05,
-//   6: precip06,
-//   7: precip07,
-//   8: precip08,
-//   9: precip09,
-//   10: precip10,
-//   11: precip11,
-//   12: precip12,
-// };
-// const monthlyNdvi = {
-//   1: ndvi01,
-//   2: ndvi02,
-//   3: ndvi03,
-//   4: ndvi04,
-//   5: ndvi05,
-//   6: ndvi06,
-//   7: ndvi07,
-//   8: ndvi08,
-//   9: ndvi09,
-//   10: ndvi10,
-//   11: ndvi11,
-//   12: ndvi12,
-// };
 
 async function loadJsonFiles() {
   const monthlyPrecip = {};
@@ -183,6 +132,7 @@ function Home() {
   const [currentDate, setCurrentDate] = useState(dayjs("2023-01-01"));
   const [stringDate, setStringDate] = useState(currentDate.format("YYYYMMDD"));
   const [currentMonth, setCurrentMonth] = useState(currentDate.month() + 1);
+  const [loaded, setLoaded] = useState(false);
   const colorRanges = {
     precipitation: [
       [255, 255, 204, 192],
@@ -207,24 +157,8 @@ function Home() {
       setMonthlyPrecip(monthlyPrecip);
       setMonthlyNdvi(monthlyNDVI);
       console.log("loaded data");
+      setLoaded(true);
     });
-    // loadNDVIFromUrls().then((data) => {
-    //   console.log("loading NDVI data")
-    //   console.log(data)
-    //   setMonthlyNdvi(data);
-    //   console.log("loaded NDVI data");
-    // });
-
-    // loadPrecipFromUrls().then((data) => {
-    //   setMonthlyPrecip(data);
-    //   console.log("loaded Precipitation data");
-    // });
-    
-    // loadJsonFiles().then(({ monthlyPrecip, monthlyNdvi }) => {
-    //   setMonthlyPrecip(monthlyPrecip);
-    //   setMonthlyNdvi(monthlyNdvi);
-    //   console.log("loaded data");
-    // });
   }, []);
 
   // TODO: we can add a visibility prop to each layer and assign it to the corresponding state -> layerVisibility
@@ -367,7 +301,7 @@ function Home() {
               <DatePicker
                 label="Date"
                 minDate={dayjs("2023-01-01")}
-                maxDate={dayjs("2023-12-31")}
+                maxDate={loaded ? dayjs("2023-12-31") : dayjs("2023-01-31")}
                 value={currentDate}
                 onChange={(newValue) => handleDate(newValue)}
               />
