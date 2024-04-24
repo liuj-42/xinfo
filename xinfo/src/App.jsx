@@ -115,11 +115,6 @@ function App() {
       visible: true,
       filled: true,
       pickable: true,
-      // getFillColor: (f) => {
-      //   // Use the feature's properties to generate a color
-      //   const hash = [...f.properties.name].reduce((acc, char) => char.charCodeAt(0) + ((acc << 5) - acc), 0);
-      //   return [hash & 0xFF, (hash & 0xFF00) >> 8, (hash & 0xFF0000) >> 16];
-      // },
       getLineColor: [255, 255, 255],
       lineWidthMinPixels: 2,
       onHover: (info) => setHoverInfo(info),
@@ -153,7 +148,7 @@ function App() {
       radiusPixels: 30,
       colorRange: [[0, 172, 105], [244, 161, 0], [247, 100, 0], [232, 21, 0], [227, 0, 89], [105, 0, 99]],
       opacity: 0.7,
-    }),   
+    }),
     new HexagonLayer({
       data: monthlyPrecip[currentMonth][stringDate],
       visible: layerVisibility.precipitation,
@@ -228,19 +223,6 @@ function App() {
           </DemoContainer>
         </LocalizationProvider>
       </div>
-      
-
-      {/* <div style={{ position: "relative", zIndex: 2 }}>
-        <button onClick={() => setSelectedDay(selectedDay - 1)}>
-          Previous Day
-        </button>
-        <button onClick={() => setSelectedDay(selectedDay + 1)}>
-          Next Day
-        </button>
-        <span>
-          Date: {getDateFromDayNum(selectedDay + 1).toDateString()}
-        </span>
-      </div> */}
       <DeckGL
         mapStyle="https://basemaps.cartocdn.com/gl/positron-gl-style/style.json"
         initialViewState={INITIAL_VIEW_STATE}
@@ -285,6 +267,9 @@ function App() {
           label="Precipitation"
         />
       </FormGroup>
+      { Object.values(layerVisibility).some((layer) => layer) && (
+        <div> yeah</div>
+      )}
     </div>
   );
 }
