@@ -1,7 +1,10 @@
+import { useNavigate } from "react-router-dom";
+
 function Metadata() {
+    const navigate = useNavigate();
     return (
       <div>
-        
+        <button onClick={() => navigate("/")}>Home</button>
         <h1>Geo-Vegetation Spatial Information Model</h1>
         <h2>Metadata</h2>
         <ul>
