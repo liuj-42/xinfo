@@ -73,7 +73,6 @@ async function loadPrecipFromUrls() {
 
 const linkList ={
   "precip": [
-    "https://xinfo-storage.s3.us-east-2.amazonaws.com/new_precip/merged-01.json",
     "https://xinfo-storage.s3.us-east-2.amazonaws.com/new_precip/merged-02.json",
     "https://xinfo-storage.s3.us-east-2.amazonaws.com/new_precip/merged-03.json",
     "https://xinfo-storage.s3.us-east-2.amazonaws.com/new_precip/merged-04.json",
@@ -87,7 +86,6 @@ const linkList ={
     "https://xinfo-storage.s3.us-east-2.amazonaws.com/new_precip/merged-12.json"
   ],
   "ndvi": [
-    "https://xinfo-storage.s3.us-east-2.amazonaws.com/ndvi_monthly/ndvi_202301.json",
     "https://xinfo-storage.s3.us-east-2.amazonaws.com/ndvi_monthly/ndvi_202302.json",
     "https://xinfo-storage.s3.us-east-2.amazonaws.com/ndvi_monthly/ndvi_202303.json",
     "https://xinfo-storage.s3.us-east-2.amazonaws.com/ndvi_monthly/ndvi_202304.json",
@@ -122,24 +120,6 @@ const colorRanges = {
   ],
 };
 
-async function loadNDVIFromUrls() {
-  const monthlyNDVI = {};
-
-  
-  for (let link of linkList.ndvi) {
-    const response = await fetch(link);
-    const data = await response.json();
-    monthlyNDVI[linkList.indexOf(link) + 1] = data;
-  }
-  return monthlyNDVI;
-}
-
-async function loadData() {
-  const monthlyPrecip = await loadPrecipFromUrls();
-  const monthlyNDVI = await loadNDVIFromUrls();
-  return { monthlyPrecip, monthlyNDVI };
-}
-
 
 
 function Home() {
@@ -156,12 +136,12 @@ function Home() {
   const [stringDate, setStringDate] = useState(currentDate.format("YYYYMMDD"));
   const [currentMonth, setCurrentMonth] = useState(currentDate.month() + 1);
   const [loaded, setLoaded] = useState(1);
-  
+
 
   async function loadFromURLS() {
 
-    let tempMonthlyPrecip = {};
-    let tempMonthlyNdvi = {};
+    let tempMonthlyPrecip = {...monthlyPrecip};
+    let tempMonthlyNdvi = {...monthlyNdvi};
 
 
     for (let i of (linkList.precip).keys()) {
@@ -173,13 +153,13 @@ function Home() {
       const dataPrecip = await responsePrecip.json();
       tempMonthlyNdvi[i + 1] = dataNDVI;
       tempMonthlyPrecip[i + 1] = dataPrecip;
-      if (i % 4 === 0) {
-        setMonthlyNdvi(tempMonthlyNdvi);
-        setMonthlyPrecip(tempMonthlyPrecip);
-        setLoaded(loaded + 4);
+      // if (i % 4 === 0) {
+      setMonthlyNdvi(tempMonthlyNdvi);
+      setMonthlyPrecip(tempMonthlyPrecip);
+      setLoaded(i + 1);
         // setMonthlyNdvi({ ...monthlyNdvi, [i + 1]: dataNDVI });
         // setMonthlyPrecip({ ...monthlyPrecip, [i + 1]: dataPrecip });
-      }
+      // }
       // console.log("loaded data")
       // console.log(monthlyNdvi)
       // console.log(monthlyPrecip)
