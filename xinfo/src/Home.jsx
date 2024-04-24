@@ -26,8 +26,12 @@ import { ThemeProvider, createTheme } from "@mui/material/styles";
 import "./App.css";
 
 import precip01 from "./assets/merged-01.json";
+import precip02 from "./assets/merged-02.json";
+import precip03 from "./assets/merged-03.json";
 
 import ndvi01 from "./assets/ndvi_202301.json";
+import ndvi02 from "./assets/ndvi_202302.json";
+import ndvi03 from "./assets/ndvi_202303.json";
 
 async function loadJsonFiles() {
   const monthlyPrecip = {};
@@ -73,8 +77,6 @@ async function loadPrecipFromUrls() {
 
 const linkList ={
   "precip": [
-    "https://xinfo-storage.s3.us-east-2.amazonaws.com/new_precip/merged-02.json",
-    "https://xinfo-storage.s3.us-east-2.amazonaws.com/new_precip/merged-03.json",
     "https://xinfo-storage.s3.us-east-2.amazonaws.com/new_precip/merged-04.json",
     "https://xinfo-storage.s3.us-east-2.amazonaws.com/new_precip/merged-05.json",
     "https://xinfo-storage.s3.us-east-2.amazonaws.com/new_precip/merged-06.json",
@@ -86,8 +88,6 @@ const linkList ={
     "https://xinfo-storage.s3.us-east-2.amazonaws.com/new_precip/merged-12.json"
   ],
   "ndvi": [
-    "https://xinfo-storage.s3.us-east-2.amazonaws.com/ndvi_monthly/ndvi_202302.json",
-    "https://xinfo-storage.s3.us-east-2.amazonaws.com/ndvi_monthly/ndvi_202303.json",
     "https://xinfo-storage.s3.us-east-2.amazonaws.com/ndvi_monthly/ndvi_202304.json",
     "https://xinfo-storage.s3.us-east-2.amazonaws.com/ndvi_monthly/ndvi_202305.json",
     "https://xinfo-storage.s3.us-east-2.amazonaws.com/ndvi_monthly/ndvi_202306.json",
@@ -124,8 +124,8 @@ const colorRanges = {
 
 function Home() {
   const [hoverInfo, setHoverInfo] = useState(null);
-  const [monthlyPrecip, setMonthlyPrecip] = useState({ 1: precip01 });
-  const [monthlyNdvi, setMonthlyNdvi] = useState({ 1: ndvi01 });
+  const [monthlyPrecip, setMonthlyPrecip] = useState({ 1: precip01, 2: precip02, 3: precip03});
+  const [monthlyNdvi, setMonthlyNdvi] = useState({ 1: ndvi01, 2: ndvi02, 3: ndvi03});
 
   const [layerVisibility, setLayerVisibility] = useState({
     ndvi: true,
@@ -135,7 +135,7 @@ function Home() {
   const [currentDate, setCurrentDate] = useState(dayjs("2023-01-01"));
   const [stringDate, setStringDate] = useState(currentDate.format("YYYYMMDD"));
   const [currentMonth, setCurrentMonth] = useState(currentDate.month() + 1);
-  const [loaded, setLoaded] = useState(1);
+  const [loaded, setLoaded] = useState(3);
 
 
   async function loadFromURLS() {
@@ -151,19 +151,11 @@ function Home() {
       const responsePrecip = await fetch(precipUrl);
       const dataNDVI = await responseNDVI.json();
       const dataPrecip = await responsePrecip.json();
-      tempMonthlyNdvi[i + 1] = dataNDVI;
-      tempMonthlyPrecip[i + 1] = dataPrecip;
-      // if (i % 4 === 0) {
-      setMonthlyNdvi(tempMonthlyNdvi);
-      setMonthlyPrecip(tempMonthlyPrecip);
+      tempMonthlyNdvi[i + 4] = dataNDVI;
+      tempMonthlyPrecip[i + 4] = dataPrecip;
+      setMonthlyNdvi({ ...monthlyNdvi, [i + 4]: dataNDVI });
+      setMonthlyPrecip({ ...monthlyPrecip, [i + 4]: dataPrecip });
       setLoaded(i + 1);
-        // setMonthlyNdvi({ ...monthlyNdvi, [i + 1]: dataNDVI });
-        // setMonthlyPrecip({ ...monthlyPrecip, [i + 1]: dataPrecip });
-      // }
-      // console.log("loaded data")
-      // console.log(monthlyNdvi)
-      // console.log(monthlyPrecip)
-      // await new Promise((r) => setTimeout(r, 1000));
     }
     setMonthlyNdvi(tempMonthlyNdvi);
     setMonthlyPrecip(tempMonthlyPrecip);
@@ -300,6 +292,15 @@ function Home() {
           </ThemeProvider>
         </Box>
       </div>
+      
+      {/* progess bar for loading data (based off of the value of loading) */}
+      {loaded < 12 && (
+        <div className="progress">
+          <h1>Loading Data...</h1>
+          <progress max="12" value={loaded}></progress>
+        </div>
+      )}
+
 
       <Card
         variant="outlined"
