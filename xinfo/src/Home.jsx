@@ -25,7 +25,7 @@ import { ThemeProvider, createTheme } from "@mui/material/styles";
 
 import "./App.css";
 
-import precip01 from "./assets/new_precip/merged-01.json";
+import precip01 from "./assets/merged-01.json";
 // import precip02 from "./assets/new_precip/merged-02.json";
 // import precip03 from "./assets/new_precip/merged-03.json";
 // import precip04 from "./assets/new_precip/merged-04.json";
@@ -38,7 +38,7 @@ import precip01 from "./assets/new_precip/merged-01.json";
 // import precip11 from "./assets/new_precip/merged-11.json";
 // import precip12 from "./assets/new_precip/merged-12.json";
 
-import ndvi01 from "./assets/ndvi_monthly/ndvi_202301.json";
+import ndvi01 from "./assets/ndvi_202301.json";
 // import ndvi02 from "./assets/ndvi_monthly/ndvi_202302.json";
 // import ndvi03 from "./assets/ndvi_monthly/ndvi_202303.json";
 // import ndvi04 from "./assets/ndvi_monthly/ndvi_202304.json";
