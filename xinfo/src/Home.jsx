@@ -33,48 +33,6 @@ import ndvi01 from "./assets/ndvi_202301.json";
 import ndvi02 from "./assets/ndvi_202302.json";
 import ndvi03 from "./assets/ndvi_202303.json";
 
-async function loadJsonFiles() {
-  const monthlyPrecip = {};
-  const monthlyNdvi = {};
-
-  const precipPromises = Array.from({ length: 12 }, (_, i) =>
-    import(`./assets/new_precip/merged-${String(i + 1).padStart(2, "0")}.json`)
-  );
-
-  const ndviPromises = Array.from({ length: 12 }, (_, i) =>
-    import(
-      `./assets/ndvi_monthly/ndvi_2023${String(i + 1).padStart(2, "0")}.json`
-    )
-  );
-
-  const precipData = await Promise.all(precipPromises);
-  const ndviData = await Promise.all(ndviPromises);
-
-  precipData.forEach((data, i) => {
-    monthlyPrecip[i + 1] = data.default;
-  });
-
-  ndviData.forEach((data, i) => {
-    monthlyNdvi[i + 1] = data.default;
-  });
-
-  return { monthlyPrecip, monthlyNdvi };
-}
-
-
-
-async function loadPrecipFromUrls() {
-  const monthlyPrecip = {};
-
-  for (let link of linkList.precip) {
-    const response = await fetch(link);
-    const data = await response.json();
-    monthlyPrecip[linkList.indexOf(link) + 1] = data;
-  }
-  return monthlyPrecip;
-
-}
-
 const linkList ={
   "precip": [
     "https://xinfo-storage.s3.us-east-2.amazonaws.com/new_precip/merged-04.json",
@@ -111,12 +69,12 @@ const colorRanges = {
     [37, 52, 148, 192],
   ],
   ndvi: [
-    [0, 172, 105],
-    [244, 161, 0],
-    [247, 100, 0],
-    [232, 21, 0],
-    [227, 0, 89],
     [105, 0, 99],
+    [227, 0, 89],
+    [232, 21, 0],
+    [247, 100, 0],
+    [244, 161, 0],
+    [0, 172, 105],
   ],
 };
 
