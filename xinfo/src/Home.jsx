@@ -155,7 +155,7 @@ function Home() {
       tempMonthlyPrecip[i + 4] = dataPrecip;
       setMonthlyNdvi({ ...monthlyNdvi, [i + 4]: dataNDVI });
       setMonthlyPrecip({ ...monthlyPrecip, [i + 4]: dataPrecip });
-      setLoaded(i + 1);
+      setLoaded(i + 4);
     }
     setMonthlyNdvi(tempMonthlyNdvi);
     setMonthlyPrecip(tempMonthlyPrecip);
