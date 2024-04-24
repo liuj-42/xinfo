@@ -282,7 +282,7 @@ function App() {
         />
         <FormControlLabel
           control={<Checkbox defaultChecked onChange={() => handleChecked("precipitation")} />}
-          label="Percipitation"
+          label="Precipitation"
         />
       </FormGroup>
     </div>
