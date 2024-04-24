@@ -90,21 +90,9 @@ const getDateFromDayNum = function (dayNum) {
   return date;
 };
 
-const getDayNumFromDate = function (dayNum) {
-  if ( dayNum > 365) {
-    return -1;
-  }
-  return getDateFromDayNum(dayNum).getDay();
-}
-
-const getMonthNumFromDate = function (dayNum) {
-  return getDateFromDayNum(dayNum).getMonth() + 1;
-}
-
 function Home() {
   const [hoverInfo, setHoverInfo] = useState(null);
 
-  const [selectedDay, setSelectedDay] = useState(0);
 
   const [layerVisibility, setLayerVisibility] = useState({
     ndvi: true,
@@ -115,6 +103,11 @@ function Home() {
   const [stringDate, setStringDate] = useState(currentDate.format("YYYYMMDD"));
   const [currentMonth, setCurrentMonth] = useState(currentDate.month()+1);
 
+  const colorRanges = {
+    precipitation: [[255, 255, 204, 192], [199, 233, 180, 192], [127, 205, 187, 192], [65, 182, 196, 192], [44, 127, 184, 192], [37, 52, 148, 192]],
+    ndvi: [[0, 172, 105], [244, 161, 0], [247, 100, 0], [232, 21, 0], [227, 0, 89], [105, 0, 99]],
+  }
+
   // TODO: we can add a visibility prop to each layer and assign it to the corresponding state -> layerVisibility
   const layer = [
     new GeoJsonLayer({
@@ -124,11 +117,6 @@ function Home() {
       visible: true,
       filled: true,
       pickable: true,
-      // getFillColor: (f) => {
-      //   // Use the feature's properties to generate a color
-      //   const hash = [...f.properties.name].reduce((acc, char) => char.charCodeAt(0) + ((acc << 5) - acc), 0);
-      //   return [hash & 0xFF, (hash & 0xFF00) >> 8, (hash & 0xFF0000) >> 16];
-      // },
       getLineColor: [255, 255, 255],
       lineWidthMinPixels: 2,
       onHover: (info) => setHoverInfo(info),
@@ -160,9 +148,9 @@ function Home() {
       getPosition: (d) => [d.longitude, d.latitude],
       getWeight: (d) => d.ndvi,
       radiusPixels: 30,
-      colorRange: [[0, 172, 105], [244, 161, 0], [247, 100, 0], [232, 21, 0], [227, 0, 89], [105, 0, 99]],
+      colorRange: colorRanges.ndvi,
       opacity: 0.7,
-    }),   
+    }),
     new HexagonLayer({
       data: monthlyPrecip[currentMonth][stringDate],
       visible: layerVisibility.precipitation,
@@ -173,14 +161,7 @@ function Home() {
       radius: 12500,
       extruded: true,
       pickable: true,
-      colorRange: [
-        [255, 255, 204, 192],
-        [199, 233, 180, 192],
-        [127, 205, 187, 192],
-        [65, 182, 196, 192],
-        [44, 127, 184, 192],
-        [37, 52, 148, 192],
-      ],
+      colorRange: colorRanges.precipitation,
       opacity: 0.4,
       onClick: (info) => console.log(info),
     }),
@@ -306,7 +287,12 @@ function Home() {
           </div>
         </div>
       )}
-      
+      {Object.values(layerVisibility).some(v => v) && (
+        <div className="legends">legend container
+          {layerVisibility.ndvi && <div>NDVI</div>}
+          {layerVisibility.precipitation && <div>Precipitation</div>}
+        </div>
+      )}
     </div>
   );
 }
