@@ -108,7 +108,69 @@ async function loadJsonFiles() {
   return { monthlyPrecip, monthlyNdvi };
 }
 
+
+
+async function loadPrecipFromUrls() {
+  const monthlyPrecip = {};
+  const linkList = [
+    "https://xinfo-storage.s3.us-east-2.amazonaws.com/new_precip/merged-01.json",
+    "https://xinfo-storage.s3.us-east-2.amazonaws.com/new_precip/merged-02.json",
+    "https://xinfo-storage.s3.us-east-2.amazonaws.com/new_precip/merged-03.json",
+    "https://xinfo-storage.s3.us-east-2.amazonaws.com/new_precip/merged-04.json",
+    "https://xinfo-storage.s3.us-east-2.amazonaws.com/new_precip/merged-05.json",
+    "https://xinfo-storage.s3.us-east-2.amazonaws.com/new_precip/merged-06.json",
+    "https://xinfo-storage.s3.us-east-2.amazonaws.com/new_precip/merged-07.json",
+    "https://xinfo-storage.s3.us-east-2.amazonaws.com/new_precip/merged-08.json",
+    "https://xinfo-storage.s3.us-east-2.amazonaws.com/new_precip/merged-09.json",
+    "https://xinfo-storage.s3.us-east-2.amazonaws.com/new_precip/merged-10.json",
+    "https://xinfo-storage.s3.us-east-2.amazonaws.com/new_precip/merged-11.json",
+    "https://xinfo-storage.s3.us-east-2.amazonaws.com/new_precip/merged-12.json"
+  ]
+
+  for (let link of linkList) {
+    const response = await fetch(link);
+    const data = await response.json();
+    monthlyPrecip[linkList.indexOf(link) + 1] = data;
+  }
+  return monthlyPrecip;
+
+}
+
+async function loadNDVIFromUrls() {
+  const monthlyNDVI = {};
+  const linkList = [
+    "https://xinfo-storage.s3.us-east-2.amazonaws.com/ndvi_monthly/ndvi_202301.json",
+    "https://xinfo-storage.s3.us-east-2.amazonaws.com/ndvi_monthly/ndvi_202302.json",
+    "https://xinfo-storage.s3.us-east-2.amazonaws.com/ndvi_monthly/ndvi_202303.json",
+    "https://xinfo-storage.s3.us-east-2.amazonaws.com/ndvi_monthly/ndvi_202304.json",
+    "https://xinfo-storage.s3.us-east-2.amazonaws.com/ndvi_monthly/ndvi_202305.json",
+    "https://xinfo-storage.s3.us-east-2.amazonaws.com/ndvi_monthly/ndvi_202306.json",
+    "https://xinfo-storage.s3.us-east-2.amazonaws.com/ndvi_monthly/ndvi_202307.json",
+    "https://xinfo-storage.s3.us-east-2.amazonaws.com/ndvi_monthly/ndvi_202308.json",
+    "https://xinfo-storage.s3.us-east-2.amazonaws.com/ndvi_monthly/ndvi_202309.json",
+    "https://xinfo-storage.s3.us-east-2.amazonaws.com/ndvi_monthly/ndvi_202310.json",
+    "https://xinfo-storage.s3.us-east-2.amazonaws.com/ndvi_monthly/ndvi_202311.json",
+    "https://xinfo-storage.s3.us-east-2.amazonaws.com/ndvi_monthly/ndvi_202312.json"
+  ]
+  
+  for (let link of linkList) {
+    const response = await fetch(link);
+    const data = await response.json();
+    monthlyNDVI[linkList.indexOf(link) + 1] = data;
+  }
+  return monthlyNDVI;
+}
+
+async function loadData() {
+  const monthlyPrecip = await loadPrecipFromUrls();
+  const monthlyNDVI = await loadNDVIFromUrls();
+  return { monthlyPrecip, monthlyNDVI };
+}
+
+
+
 function Home() {
+  console.log(precip01)
   const [hoverInfo, setHoverInfo] = useState(null);
   const [monthlyPrecip, setMonthlyPrecip] = useState({ 1: precip01 });
   const [monthlyNdvi, setMonthlyNdvi] = useState({ 1: ndvi01 });
@@ -141,11 +203,28 @@ function Home() {
   };
 
   useEffect(() => {
-    loadJsonFiles().then(({ monthlyPrecip, monthlyNdvi }) => {
+    loadData().then(({ monthlyPrecip, monthlyNDVI }) => {
       setMonthlyPrecip(monthlyPrecip);
-      setMonthlyNdvi(monthlyNdvi);
+      setMonthlyNdvi(monthlyNDVI);
       console.log("loaded data");
     });
+    // loadNDVIFromUrls().then((data) => {
+    //   console.log("loading NDVI data")
+    //   console.log(data)
+    //   setMonthlyNdvi(data);
+    //   console.log("loaded NDVI data");
+    // });
+
+    // loadPrecipFromUrls().then((data) => {
+    //   setMonthlyPrecip(data);
+    //   console.log("loaded Precipitation data");
+    // });
+    
+    // loadJsonFiles().then(({ monthlyPrecip, monthlyNdvi }) => {
+    //   setMonthlyPrecip(monthlyPrecip);
+    //   setMonthlyNdvi(monthlyNdvi);
+    //   console.log("loaded data");
+    // });
   }, []);
 
   // TODO: we can add a visibility prop to each layer and assign it to the corresponding state -> layerVisibility
