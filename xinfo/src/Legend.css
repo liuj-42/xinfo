@@ -1,0 +1,23 @@
+.legend {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0 1rem;
+  border-radius: 0.5rem;
+  background-color: #fff;
+  box-shadow: 0 0 0.5rem 0.5rem rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
+  padding: 0.5rem;
+  min-width: 10rem;
+  font-family: '"Roboto","Helvetica","Arial",sans-serif';
+}
+
+.legend-row {
+  display: flex;
+  align-items: center;
+}
+
+.legend-row p {
+  margin: 0;
+}

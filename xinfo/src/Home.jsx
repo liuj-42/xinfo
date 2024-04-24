@@ -1,119 +1,204 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import DeckGL from "@deck.gl/react";
 import { GeoJsonLayer } from "@deck.gl/layers";
 import geojsonData from "./assets/new-york-counties.json";
 import { HexagonLayer } from "deck.gl";
-import { HeatmapLayer } from '@deck.gl/aggregation-layers';
+import { HeatmapLayer } from "@deck.gl/aggregation-layers";
 import FormGroup from "@mui/material/FormGroup";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Checkbox from "@mui/material/Checkbox";
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
-import { Link } from 'react-router-dom';
+import Card from "@mui/material/Card";
+import CardContent from "@mui/material/CardContent";
+import { Link } from "react-router-dom";
 // Date Selector
-import dayjs from 'dayjs';
-import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import dayjs from "dayjs";
+import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 // Banner
-import AppBar from '@mui/material/AppBar';
-import Box from '@mui/material/Box';
-import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
+import AppBar from "@mui/material/AppBar";
+import Box from "@mui/material/Box";
+import Toolbar from "@mui/material/Toolbar";
+import Typography from "@mui/material/Typography";
+import { ThemeProvider, createTheme } from "@mui/material/styles";
 
-import precip01 from "./assets/new_precip/merged-01.json";
-import precip02 from "./assets/new_precip/merged-02.json";
-import precip03 from "./assets/new_precip/merged-03.json";
-import precip04 from "./assets/new_precip/merged-04.json";
-import precip05 from "./assets/new_precip/merged-05.json";
-import precip06 from "./assets/new_precip/merged-06.json";
-import precip07 from "./assets/new_precip/merged-07.json";
-import precip08 from "./assets/new_precip/merged-08.json";
-import precip09 from "./assets/new_precip/merged-09.json";
-import precip10 from "./assets/new_precip/merged-10.json";
-import precip11 from "./assets/new_precip/merged-11.json";
-import precip12 from "./assets/new_precip/merged-12.json";
+import "./App.css";
 
-import ndvi01 from "./assets/ndvi_monthly/ndvi_202301.json";
-import ndvi02 from "./assets/ndvi_monthly/ndvi_202302.json";
-import ndvi03 from "./assets/ndvi_monthly/ndvi_202303.json";
-import ndvi04 from "./assets/ndvi_monthly/ndvi_202304.json";
-import ndvi05 from "./assets/ndvi_monthly/ndvi_202305.json";
-import ndvi06 from "./assets/ndvi_monthly/ndvi_202306.json";
-import ndvi07 from "./assets/ndvi_monthly/ndvi_202307.json";
-import ndvi08 from "./assets/ndvi_monthly/ndvi_202308.json";
-import ndvi09 from "./assets/ndvi_monthly/ndvi_202309.json";
-import ndvi10 from "./assets/ndvi_monthly/ndvi_202310.json";
-import ndvi11 from "./assets/ndvi_monthly/ndvi_202311.json";
-import ndvi12 from "./assets/ndvi_monthly/ndvi_202312.json";
+import precip01 from "./assets/merged-01.json";
 
-const monthlyPrecip = {
-  1: precip01,
-  2: precip02,
-  3: precip03,
-  4: precip04,
-  5: precip05,
-  6: precip06,
-  7: precip07,
-  8: precip08,
-  9: precip09,
-  10: precip10,
-  11: precip11,
-  12: precip12,
-};
-const monthlyNdvi = {
-  1: ndvi01,
-  2: ndvi02,
-  3: ndvi03,
-  4: ndvi04,
-  5: ndvi05,
-  6: ndvi06,
-  7: ndvi07,
-  8: ndvi08,
-  9: ndvi09,
-  10: ndvi10,
-  11: ndvi11,
-  12: ndvi12,
-};
-const getDateFromDayNum = function (dayNum) {
-  let date = new Date();
-  date.setFullYear(2023);
+import ndvi01 from "./assets/ndvi_202301.json";
 
-  date.setMonth(0);
-  date.setDate(0);
-  let timeOfFirst = date.getTime(); // this is the time in milliseconds of 1/1/YYYY
-  let dayMilli = 1000 * 60 * 60 * 24;
-  let dayNumMilli = dayNum * dayMilli;
-  date.setTime(timeOfFirst + dayNumMilli);
-  return date;
-};
+async function loadJsonFiles() {
+  const monthlyPrecip = {};
+  const monthlyNdvi = {};
 
-const getDayNumFromDate = function (dayNum) {
-  if ( dayNum > 365) {
-    return -1;
+  const precipPromises = Array.from({ length: 12 }, (_, i) =>
+    import(`./assets/new_precip/merged-${String(i + 1).padStart(2, "0")}.json`)
+  );
+
+  const ndviPromises = Array.from({ length: 12 }, (_, i) =>
+    import(
+      `./assets/ndvi_monthly/ndvi_2023${String(i + 1).padStart(2, "0")}.json`
+    )
+  );
+
+  const precipData = await Promise.all(precipPromises);
+  const ndviData = await Promise.all(ndviPromises);
+
+  precipData.forEach((data, i) => {
+    monthlyPrecip[i + 1] = data.default;
+  });
+
+  ndviData.forEach((data, i) => {
+    monthlyNdvi[i + 1] = data.default;
+  });
+
+  return { monthlyPrecip, monthlyNdvi };
+}
+
+
+
+async function loadPrecipFromUrls() {
+  const monthlyPrecip = {};
+
+  for (let link of linkList.precip) {
+    const response = await fetch(link);
+    const data = await response.json();
+    monthlyPrecip[linkList.indexOf(link) + 1] = data;
   }
-  return getDateFromDayNum(dayNum).getDay();
+  return monthlyPrecip;
+
 }
 
-const getMonthNumFromDate = function (dayNum) {
-  return getDateFromDayNum(dayNum).getMonth() + 1;
+const linkList ={
+  "precip": [
+    "https://xinfo-storage.s3.us-east-2.amazonaws.com/new_precip/merged-01.json",
+    "https://xinfo-storage.s3.us-east-2.amazonaws.com/new_precip/merged-02.json",
+    "https://xinfo-storage.s3.us-east-2.amazonaws.com/new_precip/merged-03.json",
+    "https://xinfo-storage.s3.us-east-2.amazonaws.com/new_precip/merged-04.json",
+    "https://xinfo-storage.s3.us-east-2.amazonaws.com/new_precip/merged-05.json",
+    "https://xinfo-storage.s3.us-east-2.amazonaws.com/new_precip/merged-06.json",
+    "https://xinfo-storage.s3.us-east-2.amazonaws.com/new_precip/merged-07.json",
+    "https://xinfo-storage.s3.us-east-2.amazonaws.com/new_precip/merged-08.json",
+    "https://xinfo-storage.s3.us-east-2.amazonaws.com/new_precip/merged-09.json",
+    "https://xinfo-storage.s3.us-east-2.amazonaws.com/new_precip/merged-10.json",
+    "https://xinfo-storage.s3.us-east-2.amazonaws.com/new_precip/merged-11.json",
+    "https://xinfo-storage.s3.us-east-2.amazonaws.com/new_precip/merged-12.json"
+  ],
+  "ndvi": [
+    "https://xinfo-storage.s3.us-east-2.amazonaws.com/ndvi_monthly/ndvi_202301.json",
+    "https://xinfo-storage.s3.us-east-2.amazonaws.com/ndvi_monthly/ndvi_202302.json",
+    "https://xinfo-storage.s3.us-east-2.amazonaws.com/ndvi_monthly/ndvi_202303.json",
+    "https://xinfo-storage.s3.us-east-2.amazonaws.com/ndvi_monthly/ndvi_202304.json",
+    "https://xinfo-storage.s3.us-east-2.amazonaws.com/ndvi_monthly/ndvi_202305.json",
+    "https://xinfo-storage.s3.us-east-2.amazonaws.com/ndvi_monthly/ndvi_202306.json",
+    "https://xinfo-storage.s3.us-east-2.amazonaws.com/ndvi_monthly/ndvi_202307.json",
+    "https://xinfo-storage.s3.us-east-2.amazonaws.com/ndvi_monthly/ndvi_202308.json",
+    "https://xinfo-storage.s3.us-east-2.amazonaws.com/ndvi_monthly/ndvi_202309.json",
+    "https://xinfo-storage.s3.us-east-2.amazonaws.com/ndvi_monthly/ndvi_202310.json",
+    "https://xinfo-storage.s3.us-east-2.amazonaws.com/ndvi_monthly/ndvi_202311.json",
+    "https://xinfo-storage.s3.us-east-2.amazonaws.com/ndvi_monthly/ndvi_202312.json"
+  ]
+
 }
+
+const colorRanges = {
+  precipitation: [
+    [255, 255, 204, 192],
+    [199, 233, 180, 192],
+    [127, 205, 187, 192],
+    [65, 182, 196, 192],
+    [44, 127, 184, 192],
+    [37, 52, 148, 192],
+  ],
+  ndvi: [
+    [0, 172, 105],
+    [244, 161, 0],
+    [247, 100, 0],
+    [232, 21, 0],
+    [227, 0, 89],
+    [105, 0, 99],
+  ],
+};
+
+async function loadNDVIFromUrls() {
+  const monthlyNDVI = {};
+
+  
+  for (let link of linkList.ndvi) {
+    const response = await fetch(link);
+    const data = await response.json();
+    monthlyNDVI[linkList.indexOf(link) + 1] = data;
+  }
+  return monthlyNDVI;
+}
+
+async function loadData() {
+  const monthlyPrecip = await loadPrecipFromUrls();
+  const monthlyNDVI = await loadNDVIFromUrls();
+  return { monthlyPrecip, monthlyNDVI };
+}
+
+
 
 function Home() {
   const [hoverInfo, setHoverInfo] = useState(null);
-
-  const [selectedDay, setSelectedDay] = useState(0);
+  const [monthlyPrecip, setMonthlyPrecip] = useState({ 1: precip01 });
+  const [monthlyNdvi, setMonthlyNdvi] = useState({ 1: ndvi01 });
 
   const [layerVisibility, setLayerVisibility] = useState({
     ndvi: true,
     precipitation: true,
   });
 
-  const [currentDate, setCurrentDate] = useState(dayjs('2023-01-01'));
+  const [currentDate, setCurrentDate] = useState(dayjs("2023-01-01"));
   const [stringDate, setStringDate] = useState(currentDate.format("YYYYMMDD"));
-  const [currentMonth, setCurrentMonth] = useState(currentDate.month()+1);
+  const [currentMonth, setCurrentMonth] = useState(currentDate.month() + 1);
+  const [loaded, setLoaded] = useState(1);
+  
+
+  async function loadFromURLS() {
+
+    let tempMonthlyPrecip = {};
+    let tempMonthlyNdvi = {};
+
+
+    for (let i of (linkList.precip).keys()) {
+      const precipUrl = linkList.precip[i];
+      const NDVIUrl = linkList.ndvi[i];
+      const responseNDVI = await fetch(NDVIUrl);
+      const responsePrecip = await fetch(precipUrl);
+      const dataNDVI = await responseNDVI.json();
+      const dataPrecip = await responsePrecip.json();
+      tempMonthlyNdvi[i + 1] = dataNDVI;
+      tempMonthlyPrecip[i + 1] = dataPrecip;
+      if (i % 4 === 0) {
+        setMonthlyNdvi(tempMonthlyNdvi);
+        setMonthlyPrecip(tempMonthlyPrecip);
+        setLoaded(loaded + 4);
+        // setMonthlyNdvi({ ...monthlyNdvi, [i + 1]: dataNDVI });
+        // setMonthlyPrecip({ ...monthlyPrecip, [i + 1]: dataPrecip });
+      }
+      // console.log("loaded data")
+      // console.log(monthlyNdvi)
+      // console.log(monthlyPrecip)
+      // await new Promise((r) => setTimeout(r, 1000));
+    }
+    setMonthlyNdvi(tempMonthlyNdvi);
+    setMonthlyPrecip(tempMonthlyPrecip);
+    setLoaded(12);
+  }
+
+  useEffect(() => {
+    // loadData().then(({ monthlyPrecip, monthlyNDVI }) => {
+    //   setMonthlyPrecip(monthlyPrecip);
+    //   setMonthlyNdvi(monthlyNDVI);
+    //   console.log("loaded data");
+    //   setLoaded(true);
+    // });
+    loadFromURLS();
+  }, []);
 
   // TODO: we can add a visibility prop to each layer and assign it to the corresponding state -> layerVisibility
   const layer = [
@@ -124,11 +209,6 @@ function Home() {
       visible: true,
       filled: true,
       pickable: true,
-      // getFillColor: (f) => {
-      //   // Use the feature's properties to generate a color
-      //   const hash = [...f.properties.name].reduce((acc, char) => char.charCodeAt(0) + ((acc << 5) - acc), 0);
-      //   return [hash & 0xFF, (hash & 0xFF00) >> 8, (hash & 0xFF0000) >> 16];
-      // },
       getLineColor: [255, 255, 255],
       lineWidthMinPixels: 2,
       onHover: (info) => setHoverInfo(info),
@@ -153,16 +233,16 @@ function Home() {
       onHover: (info) => setHoverInfo(info),
     }),
     new HeatmapLayer({
-      id: 'ndviLayer',
+      id: "ndviLayer",
       data: monthlyNdvi[currentMonth][stringDate],
       visible: layerVisibility.ndvi,
-      aggregation: 'SUM',
+      aggregation: "SUM",
       getPosition: (d) => [d.longitude, d.latitude],
       getWeight: (d) => d.ndvi,
       radiusPixels: 30,
-      colorRange: [[0, 172, 105], [244, 161, 0], [247, 100, 0], [232, 21, 0], [227, 0, 89], [105, 0, 99]],
+      colorRange: colorRanges.ndvi,
       opacity: 0.7,
-    }),   
+    }),
     new HexagonLayer({
       data: monthlyPrecip[currentMonth][stringDate],
       visible: layerVisibility.precipitation,
@@ -173,14 +253,7 @@ function Home() {
       radius: 12500,
       extruded: true,
       pickable: true,
-      colorRange: [
-        [255, 255, 204, 192],
-        [199, 233, 180, 192],
-        [127, 205, 187, 192],
-        [65, 182, 196, 192],
-        [44, 127, 184, 192],
-        [37, 52, 148, 192],
-      ],
+      colorRange: colorRanges.precipitation,
       opacity: 0.4,
       onClick: (info) => console.log(info),
     }),
@@ -208,10 +281,8 @@ function Home() {
   const handleDate = (newValue) => {
     setCurrentDate(newValue);
     const newDate = newValue.format("YYYYMMDD");
-    console.log(newDate);
     setStringDate(newDate);
-    console.log(newValue.month()+1);
-    setCurrentMonth(newValue.month()+1);
+    setCurrentMonth(newValue.month() + 1);
   };
 
   // control layer visibility
@@ -223,9 +294,9 @@ function Home() {
   };
   const darkTheme = createTheme({
     palette: {
-      mode: 'dark',
+      mode: "dark",
       primary: {
-        main: '#1976d2',
+        main: "#1976d2",
       },
     },
   });
@@ -233,41 +304,65 @@ function Home() {
     <div>
       <div style={{ position: "relative", zIndex: 2, marginBottom: "1.5em" }}>
         <Box sx={{ flexGrow: 1 }}>
-        <ThemeProvider theme={darkTheme}>
-          <AppBar position="static" color="primary">
-            <Toolbar>
-              <Typography variant="h6" sx={{ margin: "auto" }}>
-              Geo-Vegetation Spatial Information Model
-              </Typography>
-              <Typography variant="h6"><Link to="/Metadata" style={{color: "white"}}>Metadata</Link></Typography>
-            </Toolbar>
-          </AppBar>
-        </ThemeProvider>
+          <ThemeProvider theme={darkTheme}>
+            <AppBar position="static" color="primary">
+              <Toolbar>
+                <Typography variant="h6" sx={{ margin: "auto" }}>
+                  Geo-Vegetation Spatial Information Model
+                </Typography>
+                <Typography variant="h6">
+                  <Link to="/Metadata" style={{ color: "white" }}>
+                    Metadata
+                  </Link>
+                </Typography>
+              </Toolbar>
+            </AppBar>
+          </ThemeProvider>
         </Box>
       </div>
-      
-      <Card variant="outlined" sx={{width: "20em", height: "13em", background: "white", position: "relative", zIndex: 2,}}>
+
+      <Card
+        variant="outlined"
+        sx={{
+          width: "20em",
+          height: "13em",
+          background: "white",
+          position: "relative",
+          zIndex: 2,
+        }}
+      >
         <CardContent>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <DemoContainer components={['DatePicker', 'DatePicker']} sx={{marginLeft: "1em", marginBottom: "1em"}}>
+            <DemoContainer
+              components={["DatePicker", "DatePicker"]}
+              sx={{ marginLeft: "1em", marginBottom: "1em" }}
+            >
               <DatePicker
                 label="Date"
-                minDate={dayjs('2023-01-01')}
-                maxDate={dayjs('2023-12-31')}
+                minDate={dayjs("2023-01-01")}
+                maxDate={dayjs(`2023-${loaded}-31`)}
                 value={currentDate}
                 onChange={(newValue) => handleDate(newValue)}
               />
             </DemoContainer>
           </LocalizationProvider>
-          <FormGroup sx={{marginLeft: "1em"}}>
+          <FormGroup sx={{ marginLeft: "1em" }}>
             <FormControlLabel
               control={
-                <Checkbox defaultChecked onChange={() => handleChecked("ndvi")} />
+                <Checkbox
+                  defaultChecked
+                  onChange={() => handleChecked("ndvi")}
+                />
               }
               label="NDVI"
             />
             <FormControlLabel
-              control={<Checkbox defaultChecked onChange={() => handleChecked("precipitation")} />}
+              control={
+                <Checkbox
+                  defaultChecked
+                  onChange={() => handleChecked("precipitation")}
+                />
+              }
               label="Precipitation"
             />
           </FormGroup>
@@ -306,7 +401,60 @@ function Home() {
           </div>
         </div>
       )}
-      
+      {Object.values(layerVisibility).some((v) => v) && (
+        <div className="legend-container">
+          <div className="legends">
+            {layerVisibility.ndvi && (
+              <Legend
+                colorRange={colorRanges.ndvi}
+                units=""
+                title="NDVI"
+                max={Math.max(
+                  ...monthlyNdvi[currentMonth][stringDate].map((d) => d.ndvi)
+                )}
+              />
+            )}
+            {layerVisibility.precipitation && (
+              <Legend
+                colorRange={colorRanges.precipitation}
+                units="mm"
+                title="Precipitation"
+                max={Math.max(
+                  ...monthlyPrecip[currentMonth][stringDate].map(
+                    (d) => d.precip
+                  )
+                )}
+              />
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+import "./Legend.css";
+function Legend({ colorRange, max, units, title }) {
+  return (
+    <div className="legend">
+      <h4 style={{ margin: "0", "fontFamily": '"Roboto","Helvetica","Arial",sans-serif'}}>
+        {title} {units && `(${units})`}
+      </h4>
+      {colorRange.map((color, index) => {
+        return (
+          <div key={index} className="legend-row">
+            <div
+              style={{
+                background: `rgb(${color[0]}, ${color[1]}, ${color[2]})`,
+                width: "20px",
+                height: "20px",
+                margin: "5px",
+              }}
+            ></div>
+            <p style={{"fontFamily": '"Roboto","Helvetica","Arial",sans-serif'}}>{`${((max / colorRange.length) * index).toFixed(3)}`}</p>
+          </div>
+        );
+      })}
     </div>
   );
 }

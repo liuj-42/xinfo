@@ -10,7 +10,6 @@ function App() {
           <Route path="/metadata" element={<Metadata />}></Route>
         </Routes>
       </BrowserRouter>
-      
     </div>
   );
 }
