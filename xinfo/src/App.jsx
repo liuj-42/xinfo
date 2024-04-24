@@ -40,7 +40,6 @@ import ndvi10 from "./assets/ndvi_monthly/ndvi_202310.json";
 import ndvi11 from "./assets/ndvi_monthly/ndvi_202311.json";
 import ndvi12 from "./assets/ndvi_monthly/ndvi_202312.json";
 
-import ndviData from "./assets/ndvi_monthly/ndvi_202301.json";
 const monthlyPrecip = {
   1: precip01,
   2: precip02,
@@ -101,7 +100,6 @@ function App() {
   const [layerVisibility, setLayerVisibility] = useState({
     ndvi: true,
     precipitation: true,
-    temperature: false,
   });
 
   const [currentDate, setCurrentDate] = useState(dayjs('2023-01-01'));
@@ -111,7 +109,7 @@ function App() {
   // TODO: we can add a visibility prop to each layer and assign it to the corresponding state -> layerVisibility
   const layer = [
     new GeoJsonLayer({
-      id: "countiesLayer",
+      id: "baseLayer",
       data: geojsonData,
       stroked: true,
       visible: true,
@@ -148,7 +146,7 @@ function App() {
     new HeatmapLayer({
       id: 'ndviLayer',
       data: monthlyNdvi[currentMonth][stringDate],
-      visible: true,
+      visible: layerVisibility.ndvi,
       aggregation: 'SUM',
       getPosition: (d) => [d.longitude, d.latitude],
       getWeight: (d) => d.ndvi,
@@ -276,19 +274,15 @@ function App() {
         </div>
       )}
       <FormGroup>
-        {/* <FormControlLabel
+        <FormControlLabel
           control={
             <Checkbox defaultChecked onChange={() => handleChecked("ndvi")} />
           }
           label="NDVI"
-        /> */}
-        <FormControlLabel
-          control={<Checkbox onChange={() => handleChecked("precipitation")} />}
-          label="Percipitation"
         />
         <FormControlLabel
-          control={<Checkbox onChange={() => handleChecked("temperature")} />}
-          label="Temperature"
+          control={<Checkbox defaultChecked onChange={() => handleChecked("precipitation")} />}
+          label="Percipitation"
         />
       </FormGroup>
     </div>
