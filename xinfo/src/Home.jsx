@@ -236,8 +236,8 @@ function Home() {
         <ThemeProvider theme={darkTheme}>
           <AppBar position="static" color="primary">
             <Toolbar>
-              <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-                Precip-Vegetation Spatial Information Model
+              <Typography variant="h6" sx={{ margin: "auto" }}>
+              Geo-Vegetation Spatial Information Model
               </Typography>
               <Typography variant="h6"><Link to="/Metadata" style={{color: "white"}}>Metadata</Link></Typography>
             </Toolbar>

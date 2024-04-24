@@ -2,7 +2,7 @@ function Metadata() {
     return (
       <div>
         
-        <h1>Precip-Vegetation Spatial Information Model</h1>
+        <h1>Geo-Vegetation Spatial Information Model</h1>
         <h2>Metadata</h2>
         <ul>
             <li>VegScape. Vegscape - vegetation condition explorer. URL: <a href="https://nassgeo.csiss.gmu.edu/VegScape/.7">https://nassgeo.csiss.gmu.edu/VegScape/.7</a> </li>
