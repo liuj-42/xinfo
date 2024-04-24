@@ -3,23 +3,44 @@ import DeckGL from "@deck.gl/react";
 import { GeoJsonLayer } from "@deck.gl/layers";
 import geojsonData from "./assets/new-york-counties.json";
 import { HexagonLayer } from "deck.gl";
+import { HeatmapLayer } from '@deck.gl/aggregation-layers';
 import FormGroup from "@mui/material/FormGroup";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Checkbox from "@mui/material/Checkbox";
 
-import precip01 from "./assets/precip/merged-01.json";
-import precip02 from "./assets/precip/merged-02.json";
-import precip03 from "./assets/precip/merged-03.json";
-import precip04 from "./assets/precip/merged-04.json";
-import precip05 from "./assets/precip/merged-05.json";
-import precip06 from "./assets/precip/merged-06.json";
-import precip07 from "./assets/precip/merged-07.json";
-import precip08 from "./assets/precip/merged-08.json";
-import precip09 from "./assets/precip/merged-09.json";
-import precip10 from "./assets/precip/merged-10.json";
-import precip11 from "./assets/precip/merged-11.json";
-import precip12 from "./assets/precip/merged-12.json";
+import dayjs from 'dayjs';
+import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 
+import precip01 from "./assets/new_precip/merged-01.json";
+import precip02 from "./assets/new_precip/merged-02.json";
+import precip03 from "./assets/new_precip/merged-03.json";
+import precip04 from "./assets/new_precip/merged-04.json";
+import precip05 from "./assets/new_precip/merged-05.json";
+import precip06 from "./assets/new_precip/merged-06.json";
+import precip07 from "./assets/new_precip/merged-07.json";
+import precip08 from "./assets/new_precip/merged-08.json";
+import precip09 from "./assets/new_precip/merged-09.json";
+import precip10 from "./assets/new_precip/merged-10.json";
+import precip11 from "./assets/new_precip/merged-11.json";
+import precip12 from "./assets/new_precip/merged-12.json";
+
+import ndvi01 from "./assets/ndvi_monthly/ndvi_202301.json";
+import ndvi02 from "./assets/ndvi_monthly/ndvi_202302.json";
+import ndvi03 from "./assets/ndvi_monthly/ndvi_202303.json";
+import ndvi04 from "./assets/ndvi_monthly/ndvi_202304.json";
+import ndvi05 from "./assets/ndvi_monthly/ndvi_202305.json";
+import ndvi06 from "./assets/ndvi_monthly/ndvi_202306.json";
+import ndvi07 from "./assets/ndvi_monthly/ndvi_202307.json";
+import ndvi08 from "./assets/ndvi_monthly/ndvi_202308.json";
+import ndvi09 from "./assets/ndvi_monthly/ndvi_202309.json";
+import ndvi10 from "./assets/ndvi_monthly/ndvi_202310.json";
+import ndvi11 from "./assets/ndvi_monthly/ndvi_202311.json";
+import ndvi12 from "./assets/ndvi_monthly/ndvi_202312.json";
+
+import ndviData from "./assets/ndvi_monthly/ndvi_202301.json";
 const monthlyPrecip = {
   1: precip01,
   2: precip02,
@@ -34,9 +55,20 @@ const monthlyPrecip = {
   11: precip11,
   12: precip12,
 };
-
-
-
+const monthlyNdvi = {
+  1: ndvi01,
+  2: ndvi02,
+  3: ndvi03,
+  4: ndvi04,
+  5: ndvi05,
+  6: ndvi06,
+  7: ndvi07,
+  8: ndvi08,
+  9: ndvi09,
+  10: ndvi10,
+  11: ndvi11,
+  12: ndvi12,
+};
 const getDateFromDayNum = function (dayNum) {
   let date = new Date();
   date.setFullYear(2023);
@@ -61,9 +93,6 @@ const getMonthNumFromDate = function (dayNum) {
   return getDateFromDayNum(dayNum).getMonth() + 1;
 }
 
-
-
-
 function App() {
   const [hoverInfo, setHoverInfo] = useState(null);
 
@@ -71,9 +100,13 @@ function App() {
 
   const [layerVisibility, setLayerVisibility] = useState({
     ndvi: true,
-    precipitation: false,
+    precipitation: true,
     temperature: false,
   });
+
+  const [currentDate, setCurrentDate] = useState(dayjs('2023-01-01'));
+  const [stringDate, setStringDate] = useState(currentDate.format("YYYYMMDD"));
+  const [currentMonth, setCurrentMonth] = useState(currentDate.month()+1);
 
   // TODO: we can add a visibility prop to each layer and assign it to the corresponding state -> layerVisibility
   const layer = [
@@ -94,10 +127,10 @@ function App() {
       onHover: (info) => setHoverInfo(info),
     }),
     new GeoJsonLayer({
-      id: "ndviLayer",
+      id: "countyLayer",
       data: geojsonData,
       stroked: true,
-      visible: layerVisibility.ndvi,
+      visible: false,
       filled: true,
       pickable: true,
       getFillColor: (f) => {
@@ -112,8 +145,19 @@ function App() {
       lineWidthMinPixels: 2,
       onHover: (info) => setHoverInfo(info),
     }),
+    new HeatmapLayer({
+      id: 'ndviLayer',
+      data: monthlyNdvi[currentMonth][stringDate],
+      visible: true,
+      aggregation: 'SUM',
+      getPosition: (d) => [d.longitude, d.latitude],
+      getWeight: (d) => d.ndvi,
+      radiusPixels: 30,
+      colorRange: [[0, 172, 105], [244, 161, 0], [247, 100, 0], [232, 21, 0], [227, 0, 89], [105, 0, 99]],
+      opacity: 0.7,
+    }),   
     new HexagonLayer({
-      data: monthlyPrecip[getMonthNumFromDate(selectedDay + 1)][getDayNumFromDate(selectedDay+1)],
+      data: monthlyPrecip[currentMonth][stringDate],
       visible: layerVisibility.precipitation,
       getPosition: (d) => d.COORDINATES,
       getElevationWeight: (d) => d.precip,
@@ -130,6 +174,7 @@ function App() {
         [44, 127, 184, 192],
         [37, 52, 148, 192],
       ],
+      opacity: 0.4,
       onClick: (info) => console.log(info),
     }),
   ];
@@ -153,6 +198,15 @@ function App() {
     bearing: 0,
   };
 
+  const handleDate = (newValue) => {
+    setCurrentDate(newValue);
+    const newDate = newValue.format("YYYYMMDD");
+    console.log(newDate);
+    setStringDate(newDate);
+    console.log(newValue.month()+1);
+    setCurrentMonth(newValue.month()+1);
+  };
+
   // control layer visibility
   const handleChecked = (layer) => {
     setLayerVisibility({
@@ -164,6 +218,21 @@ function App() {
   return (
     <div>
       <div style={{ position: "relative", zIndex: 2 }}>
+        <LocalizationProvider dateAdapter={AdapterDayjs}>
+          <DemoContainer components={['DatePicker', 'DatePicker']}>
+            <DatePicker
+              label="Date"
+              // minDate={new Date(`2023-01-01`)}
+              // maxDate={new Date(`2023-12-31`)}
+              value={currentDate}
+              onChange={(newValue) => handleDate(newValue)}
+            />
+          </DemoContainer>
+        </LocalizationProvider>
+      </div>
+      
+
+      {/* <div style={{ position: "relative", zIndex: 2 }}>
         <button onClick={() => setSelectedDay(selectedDay - 1)}>
           Previous Day
         </button>
@@ -173,7 +242,7 @@ function App() {
         <span>
           Date: {getDateFromDayNum(selectedDay + 1).toDateString()}
         </span>
-      </div>
+      </div> */}
       <DeckGL
         mapStyle="https://basemaps.cartocdn.com/gl/positron-gl-style/style.json"
         initialViewState={INITIAL_VIEW_STATE}
@@ -207,12 +276,12 @@ function App() {
         </div>
       )}
       <FormGroup>
-        <FormControlLabel
+        {/* <FormControlLabel
           control={
             <Checkbox defaultChecked onChange={() => handleChecked("ndvi")} />
           }
           label="NDVI"
-        />
+        /> */}
         <FormControlLabel
           control={<Checkbox onChange={() => handleChecked("precipitation")} />}
           label="Percipitation"
