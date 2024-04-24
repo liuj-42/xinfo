@@ -61,7 +61,18 @@ async function loadJsonFiles() {
 
 async function loadPrecipFromUrls() {
   const monthlyPrecip = {};
-  const linkList = [
+
+  for (let link of linkList.precip) {
+    const response = await fetch(link);
+    const data = await response.json();
+    monthlyPrecip[linkList.indexOf(link) + 1] = data;
+  }
+  return monthlyPrecip;
+
+}
+
+const linkList ={
+  "precip": [
     "https://xinfo-storage.s3.us-east-2.amazonaws.com/new_precip/merged-01.json",
     "https://xinfo-storage.s3.us-east-2.amazonaws.com/new_precip/merged-02.json",
     "https://xinfo-storage.s3.us-east-2.amazonaws.com/new_precip/merged-03.json",
@@ -74,20 +85,8 @@ async function loadPrecipFromUrls() {
     "https://xinfo-storage.s3.us-east-2.amazonaws.com/new_precip/merged-10.json",
     "https://xinfo-storage.s3.us-east-2.amazonaws.com/new_precip/merged-11.json",
     "https://xinfo-storage.s3.us-east-2.amazonaws.com/new_precip/merged-12.json"
-  ]
-
-  for (let link of linkList) {
-    const response = await fetch(link);
-    const data = await response.json();
-    monthlyPrecip[linkList.indexOf(link) + 1] = data;
-  }
-  return monthlyPrecip;
-
-}
-
-async function loadNDVIFromUrls() {
-  const monthlyNDVI = {};
-  const linkList = [
+  ],
+  "ndvi": [
     "https://xinfo-storage.s3.us-east-2.amazonaws.com/ndvi_monthly/ndvi_202301.json",
     "https://xinfo-storage.s3.us-east-2.amazonaws.com/ndvi_monthly/ndvi_202302.json",
     "https://xinfo-storage.s3.us-east-2.amazonaws.com/ndvi_monthly/ndvi_202303.json",
@@ -101,8 +100,33 @@ async function loadNDVIFromUrls() {
     "https://xinfo-storage.s3.us-east-2.amazonaws.com/ndvi_monthly/ndvi_202311.json",
     "https://xinfo-storage.s3.us-east-2.amazonaws.com/ndvi_monthly/ndvi_202312.json"
   ]
+
+}
+
+const colorRanges = {
+  precipitation: [
+    [255, 255, 204, 192],
+    [199, 233, 180, 192],
+    [127, 205, 187, 192],
+    [65, 182, 196, 192],
+    [44, 127, 184, 192],
+    [37, 52, 148, 192],
+  ],
+  ndvi: [
+    [0, 172, 105],
+    [244, 161, 0],
+    [247, 100, 0],
+    [232, 21, 0],
+    [227, 0, 89],
+    [105, 0, 99],
+  ],
+};
+
+async function loadNDVIFromUrls() {
+  const monthlyNDVI = {};
+
   
-  for (let link of linkList) {
+  for (let link of linkList.ndvi) {
     const response = await fetch(link);
     const data = await response.json();
     monthlyNDVI[linkList.indexOf(link) + 1] = data;
@@ -119,7 +143,6 @@ async function loadData() {
 
 
 function Home() {
-  console.log(precip01)
   const [hoverInfo, setHoverInfo] = useState(null);
   const [monthlyPrecip, setMonthlyPrecip] = useState({ 1: precip01 });
   const [monthlyNdvi, setMonthlyNdvi] = useState({ 1: ndvi01 });
@@ -132,33 +155,49 @@ function Home() {
   const [currentDate, setCurrentDate] = useState(dayjs("2023-01-01"));
   const [stringDate, setStringDate] = useState(currentDate.format("YYYYMMDD"));
   const [currentMonth, setCurrentMonth] = useState(currentDate.month() + 1);
-  const [loaded, setLoaded] = useState(false);
-  const colorRanges = {
-    precipitation: [
-      [255, 255, 204, 192],
-      [199, 233, 180, 192],
-      [127, 205, 187, 192],
-      [65, 182, 196, 192],
-      [44, 127, 184, 192],
-      [37, 52, 148, 192],
-    ],
-    ndvi: [
-      [0, 172, 105],
-      [244, 161, 0],
-      [247, 100, 0],
-      [232, 21, 0],
-      [227, 0, 89],
-      [105, 0, 99],
-    ],
-  };
+  const [loaded, setLoaded] = useState(1);
+  
+
+  async function loadFromURLS() {
+
+    let tempMonthlyPrecip = {};
+    let tempMonthlyNdvi = {};
+
+
+    for (let i of (linkList.precip).keys()) {
+      const precipUrl = linkList.precip[i];
+      const NDVIUrl = linkList.ndvi[i];
+      const responseNDVI = await fetch(NDVIUrl);
+      const responsePrecip = await fetch(precipUrl);
+      const dataNDVI = await responseNDVI.json();
+      const dataPrecip = await responsePrecip.json();
+      tempMonthlyNdvi[i + 1] = dataNDVI;
+      tempMonthlyPrecip[i + 1] = dataPrecip;
+      if (i % 4 === 0) {
+        setMonthlyNdvi(tempMonthlyNdvi);
+        setMonthlyPrecip(tempMonthlyPrecip);
+        setLoaded(loaded + 4);
+        // setMonthlyNdvi({ ...monthlyNdvi, [i + 1]: dataNDVI });
+        // setMonthlyPrecip({ ...monthlyPrecip, [i + 1]: dataPrecip });
+      }
+      // console.log("loaded data")
+      // console.log(monthlyNdvi)
+      // console.log(monthlyPrecip)
+      // await new Promise((r) => setTimeout(r, 1000));
+    }
+    setMonthlyNdvi(tempMonthlyNdvi);
+    setMonthlyPrecip(tempMonthlyPrecip);
+    setLoaded(12);
+  }
 
   useEffect(() => {
-    loadData().then(({ monthlyPrecip, monthlyNDVI }) => {
-      setMonthlyPrecip(monthlyPrecip);
-      setMonthlyNdvi(monthlyNDVI);
-      console.log("loaded data");
-      setLoaded(true);
-    });
+    // loadData().then(({ monthlyPrecip, monthlyNDVI }) => {
+    //   setMonthlyPrecip(monthlyPrecip);
+    //   setMonthlyNdvi(monthlyNDVI);
+    //   console.log("loaded data");
+    //   setLoaded(true);
+    // });
+    loadFromURLS();
   }, []);
 
   // TODO: we can add a visibility prop to each layer and assign it to the corresponding state -> layerVisibility
@@ -301,7 +340,7 @@ function Home() {
               <DatePicker
                 label="Date"
                 minDate={dayjs("2023-01-01")}
-                maxDate={loaded ? dayjs("2023-12-31") : dayjs("2023-01-31")}
+                maxDate={dayjs(`2023-${loaded}-31`)}
                 value={currentDate}
                 onChange={(newValue) => handleDate(newValue)}
               />
