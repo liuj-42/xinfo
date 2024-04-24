@@ -68,14 +68,26 @@ const colorRanges = {
     [44, 127, 184, 192],
     [37, 52, 148, 192],
   ],
+  // ndvi: [
+  //   [105, 0, 99],
+  //   [227, 0, 89],
+  //   [232, 21, 0],
+  //   [247, 100, 0],
+  //   [244, 161, 0],
+  //   [0, 172, 105],
+  // ],
   ndvi: [
-    [105, 0, 99],
-    [227, 0, 89],
-    [232, 21, 0],
-    [247, 100, 0],
-    [244, 161, 0],
-    [0, 172, 105],
-  ],
+    [165,0,38],
+    [215,48,39],
+    [244,109,67],
+    [253,174,97],
+    [254,224,139],
+    [217,239,139],
+    [166,217,106],
+    [102,189,99],
+    [26,152,80],
+    [0,104,55],
+  ]
 };
 
 
@@ -140,8 +152,7 @@ function Home() {
       filled: true,
       pickable: true,
       getLineColor: [255, 255, 255],
-      lineWidthMinPixels: 2,
-      onHover: (info) => setHoverInfo(info),
+      lineWidthMinPixels: 2
     }),
     new GeoJsonLayer({
       id: "countyLayer",
@@ -159,19 +170,22 @@ function Home() {
         return [hash & 0xff, (hash & 0xff00) >> 8, (hash & 0xff0000) >> 16];
       },
       getLineColor: [255, 255, 255],
-      lineWidthMinPixels: 2,
-      onHover: (info) => setHoverInfo(info),
+      lineWidthMinPixels: 2
     }),
     new HeatmapLayer({
       id: "ndviLayer",
       data: monthlyNdvi[currentMonth][stringDate],
       visible: layerVisibility.ndvi,
-      aggregation: "SUM",
+      aggregation: "MEAN",
+      colorDomain: [0, 1],
       getPosition: (d) => [d.longitude, d.latitude],
       getWeight: (d) => d.ndvi,
       radiusPixels: 30,
       colorRange: colorRanges.ndvi,
       opacity: 0.7,
+      pickable: true,
+      onHover: (info) => setHoverInfo(info),
+      onClick: (info) => console.log(info),
     }),
     new HexagonLayer({
       data: monthlyPrecip[currentMonth][stringDate],
@@ -185,20 +199,8 @@ function Home() {
       pickable: true,
       colorRange: colorRanges.precipitation,
       opacity: 0.4,
-      onClick: (info) => console.log(info),
     }),
   ];
-
-  const hoverLayer =
-    hoverInfo?.object &&
-    new GeoJsonLayer({
-      id: "HoverLayer",
-      data: hoverInfo.object,
-      stroked: true,
-      filled: false,
-      getLineColor: [255, 0, 0],
-      lineWidthMinPixels: 4,
-    });
 
   const INITIAL_VIEW_STATE = {
     longitude: -75.5,
@@ -312,13 +314,13 @@ function Home() {
         mapStyle="https://basemaps.cartocdn.com/gl/positron-gl-style/style.json"
         initialViewState={INITIAL_VIEW_STATE}
         controller={true}
-        layers={[layer, hoverLayer].filter(Boolean)}
+        layers={[layer].filter(Boolean)}
         getTooltip={({ object }) =>
-          object &&
-          `Precip: ${object.elevationValue}, coordinates: ${object.position}`
+          object && object.elevationValue && 
+          `Precip: ${object.elevationValue.toFixed(3)}`
         }
       />
-      {hoverInfo && hoverInfo.object && (
+      {hoverInfo && false && (
         <div
           style={{
             position: "absolute",
@@ -335,8 +337,8 @@ function Home() {
               border: "1px solid #ccc",
             }}
           >
-            {hoverInfo.object.properties.name} <br /> {hoverInfo.coordinate[0]},{" "}
-            {hoverInfo.coordinate[1]}
+            {hoverInfo.coordinate[0].toFixed(2)},{" "}
+            {hoverInfo.coordinate[1].toFixed(2)}
           </div>
         </div>
       )}
@@ -348,9 +350,7 @@ function Home() {
                 colorRange={colorRanges.ndvi}
                 units=""
                 title="NDVI"
-                max={Math.max(
-                  ...monthlyNdvi[currentMonth][stringDate].map((d) => d.ndvi)
-                )}
+                max={1}
               />
             )}
             {layerVisibility.precipitation && (
